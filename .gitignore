@@ -1,0 +1,6 @@
+*obj
+*egg-info
+build
+*__pycache__*
+*so
+.vscode
