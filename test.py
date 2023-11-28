@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import trimesh
@@ -15,8 +16,10 @@ class SphereSDF:
         return torch.norm(points - self.center, dim=-1) - self.radius
 
 
-diffmc = DiffMC(dtype=torch.float64).cuda()
-dualmc = DualMC(dtype=torch.float64).cuda()
+os.makedirs("out", exist_ok=True)
+
+diffmc = DiffMC(dtype=torch.float32).cuda()
+dualmc = DualMC(dtype=torch.float32).cuda()
 dimX, dimY, dimZ = 16, 16, 16
 sphere = SphereSDF(torch.tensor([0.5, 0.5, 0.5]), 0.5)
 grids = torch.stack(
@@ -24,10 +27,10 @@ grids = torch.stack(
         torch.linspace(0, 1, dimX),
         torch.linspace(0, 1, dimY),
         torch.linspace(0, 1, dimZ),
-        indexing='ij'
-    ), dim=-1
+        indexing="ij",
+    ),
+    dim=-1,
 )
-grids = grids.double()
 
 grids[..., 0] = (
     grids[..., 0] * (sphere.aabb[0, 1] - sphere.aabb[0, 0]) + sphere.aabb[0, 0]
@@ -40,12 +43,12 @@ grids[..., 2] = (
 )
 
 sdf = sphere(grids)
-sdf = sdf.double().requires_grad_(True).cuda()
+sdf = sdf.requires_grad_(True).cuda()
 sdf = torch.nn.Parameter(sdf.clone().detach(), requires_grad=True)
 deform = torch.nn.Parameter(
     torch.rand(
         (sdf.shape[0], sdf.shape[1], sdf.shape[2], 3),
-        dtype=torch.float64,
+        dtype=torch.float32,
         device="cuda",
     ),
     requires_grad=True,

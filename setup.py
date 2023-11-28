@@ -14,7 +14,6 @@ from torch.utils.cpp_extension import (
 def get_extensions():
     """Refer to torchvision."""
     this_dir = os.path.dirname(os.path.abspath(__file__))
-    extensions_dir = os.path.join(this_dir, "diso")
 
     main_file = [os.path.join(this_dir, "src", "pybind.cpp")]
     source_cuda = glob.glob(os.path.join(this_dir, "src", "*.cu"))
@@ -39,8 +38,8 @@ def get_extensions():
             "nvcc": nvcc_flags,
         }
 
-    sources = [os.path.join(extensions_dir, s) for s in sources]
-    include_dirs = [extensions_dir, os.path.join(extensions_dir, "include")]
+    sources = [os.path.join(this_dir, s) for s in sources]
+    include_dirs = [this_dir, os.path.join(this_dir, "src")]
     print("sources:", sources)
 
     ext_modules = [
@@ -56,12 +55,13 @@ def get_extensions():
 
 setup(
     name="diso",
-    version="0.0.0",
+    version="0.0.2",
     author_email="xiwei@ucsd.edu",
-    keywords="collision convex decomposition",
-    description="Approximate Convex Decomposition for 3D Meshes with Collision-Aware Concavity and Tree Search",
+    keywords="differentiable iso-surface extraction",
+    description="Differentiable Iso-Surface Extraction Package",
     classifiers=[
         "Operating System :: POSIX :: Linux",
+        "Operating System :: Microsoft :: Windows",
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
         "Intended Audience :: Other Audience",
@@ -69,21 +69,19 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Framework :: Robot Framework :: Tool",
-        "Programming Language :: C++",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
-        "Topic :: Education",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Utilities",
     ],
     license="MIT",
     packages=find_packages(exclude=["tests"]),
     python_requires=">=3.6",
-    install_requires=["torch>=1.8.0", "trimesh"],
+    install_requires=["trimesh"],
     ext_modules=get_extensions(),
     cmdclass={
         "build_ext": BuildExtension.with_options(no_python_abi_suffix=True),
