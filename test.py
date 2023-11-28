@@ -24,11 +24,11 @@ grids = torch.stack(
         torch.linspace(0, 1, dimX),
         torch.linspace(0, 1, dimY),
         torch.linspace(0, 1, dimZ),
-    )
+        indexing='ij'
+    ), dim=-1
 )
-grids = torch.tensor(grids, dtype=torch.float64)
+grids = grids.double()
 
-grids = grids.permute(1, 2, 3, 0)
 grids[..., 0] = (
     grids[..., 0] * (sphere.aabb[0, 1] - sphere.aabb[0, 0]) + sphere.aabb[0, 0]
 )
@@ -40,7 +40,7 @@ grids[..., 2] = (
 )
 
 sdf = sphere(grids)
-sdf = torch.tensor(sdf, dtype=torch.float64, requires_grad=True, device="cuda")
+sdf = sdf.double().requires_grad_(True).cuda()
 sdf = torch.nn.Parameter(sdf.clone().detach(), requires_grad=True)
 deform = torch.nn.Parameter(
     torch.rand(
