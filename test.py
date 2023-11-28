@@ -4,9 +4,6 @@ import trimesh
 from diso import DiffMC
 from diso import DualMC
 
-import numpy as np
-import time
-
 
 class SphereSDF:
     def __init__(self, center, radius):

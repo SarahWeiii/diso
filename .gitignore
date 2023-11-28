@@ -1,6 +1,6 @@
-*obj
+*.obj
 *egg-info
 build
 *__pycache__*
-*so
+*.so
 .vscode

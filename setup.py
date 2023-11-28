@@ -54,12 +54,39 @@ def get_extensions():
     ]
     return ext_modules
 
-
 setup(
     name="diso",
+    version="0.0.0",
+    author_email="xiwei@ucsd.edu",
+    keywords="collision convex decomposition",
+    description="Approximate Convex Decomposition for 3D Meshes with Collision-Aware Concavity and Tree Search",
+    classifiers=[
+        "Operating System :: POSIX :: Linux",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Education",
+        "Intended Audience :: Other Audience",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Framework :: Robot Framework :: Tool",
+        "Programming Language :: C++",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Topic :: Education",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Utilities",
+    ],
+    license="MIT",
     packages=find_packages(exclude=["tests"]),
+    python_requires=">=3.6",
+    install_requires=["torch>=1.8.0", "trimesh"],
     ext_modules=get_extensions(),
     cmdclass={
         "build_ext": BuildExtension.with_options(no_python_abi_suffix=True),
     },
+    zip_safe=False
 )
