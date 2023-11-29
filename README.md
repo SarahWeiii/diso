@@ -66,7 +66,6 @@ We compare our library with DMTet [3] and FlexiCubes [4] on two examples: a simp
 | \# Faces | 39240 | 38844 | 39884 | 39888 |
 | Memory / G | 1.57 | 5.4 | 0.6 | 0.6 |
 | Time / ms | 9.61 | 10 | 1.54 | 1.44 |
-|  |  |  |  |  |
 
 
 | Rand Init. | DMTet | FlexiCubes | DiffMC | DiffDMC |
@@ -75,7 +74,6 @@ We compare our library with DMTet [3] and FlexiCubes [4] on two examples: a simp
 | \# Faces | 4774241 | 4364842 | 4717384 | 2215690 |
 | Memory / G | 3.07 | 4.07 | 0.59 | 0.45 |
 | Time / ms | 49.1 | 65.35 | 2.55 | 2.78 |
-|  |  |  |  |  |
 
 
 # Citation
