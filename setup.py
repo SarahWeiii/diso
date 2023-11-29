@@ -13,10 +13,9 @@ from torch.utils.cpp_extension import (
 
 def get_extensions():
     """Refer to torchvision."""
-    this_dir = os.path.dirname(os.path.abspath(__file__))
 
-    main_file = [os.path.join(this_dir, "src", "pybind.cpp")]
-    source_cuda = glob.glob(os.path.join(this_dir, "src", "*.cu"))
+    main_file = [os.path.join("src", "pybind.cpp")]
+    source_cuda = glob.glob(os.path.join("src", "*.cu"))
     sources = main_file
     extension = CppExtension
 
@@ -38,8 +37,8 @@ def get_extensions():
             "nvcc": nvcc_flags,
         }
 
-    sources = [os.path.join(this_dir, s) for s in sources]
-    include_dirs = [this_dir, os.path.join(this_dir, "src")]
+    sources = [s for s in sources]
+    include_dirs = ["src"]
     print("sources:", sources)
 
     ext_modules = [
@@ -55,7 +54,7 @@ def get_extensions():
 
 setup(
     name="diso",
-    version="0.0.3",
+    version="0.0.4",
     author_email="xiwei@ucsd.edu",
     keywords="differentiable iso-surface extraction",
     description="Differentiable Iso-Surface Extraction Package",

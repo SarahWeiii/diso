@@ -16,7 +16,7 @@ pip install diso
 # Quick Start
 You can effortlessly try the following command, which converts a sphere SDF into triangle mesh using different algorithms. The generated results are saved in `out/`.
 ```
-python test.py
+python test/example.py
 ```
 
 Note:
