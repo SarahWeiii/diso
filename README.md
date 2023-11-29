@@ -60,11 +60,13 @@ We compare our library with DMTet [3] and FlexiCubes [4] on two examples: a simp
   <img src="imgs/speed.png" alt="speed_example" width="400" />
 </p>
 
+The algorithms have been rigorously tested on an NVIDIA RTX 4090 GPU. Each algorithm underwent 100 repeated runs, and the table presents the time and CUDA memory consumption for **a single run**.
+
 | Round Cube | DMTet | FlexiCubes | DiffMC | DiffDMC |
 | --- | --- | --- | --- | --- |
 | \# Vertices | 19622 | 19424 | 19944 | 19946 |
 | \# Faces | 39240 | 38844 | 39884 | 39888 |
-| Memory / G | 1.57 | 5.40 | 0.60 | 0.60 |
+| VRAM / G | 1.57 | 5.40 | 0.60 | 0.60 |
 | Time / ms | 9.61 | 10.00 | 1.54 | 1.44 |
 
 
@@ -72,7 +74,7 @@ We compare our library with DMTet [3] and FlexiCubes [4] on two examples: a simp
 | --- | --- | --- | --- | --- |
 | \# Vertices | 2597474 | 2785274 | 2651046 | 2713134 |
 | \# Faces | 4774241 | 4364842 | 4717384 | 4431380 |
-| Memory / G | 3.07 | 4.07 | 0.59 | 0.45 |
+| VRAM / G | 3.07 | 4.07 | 0.59 | 0.45 |
 | Time / ms | 49.10 | 65.35 | 2.55 | 2.78 |
 
 
