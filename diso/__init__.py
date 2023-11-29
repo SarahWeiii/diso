@@ -58,7 +58,7 @@ class DiffMC(nn.Module):
         )
         return verts, tris.long()
 
-class DualMC(nn.Module):
+class DiffDMC(nn.Module):
     def __init__(self, dtype=torch.float32):
         super().__init__()
         if dtype == torch.float32:
