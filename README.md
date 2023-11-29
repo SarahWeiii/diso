@@ -44,12 +44,12 @@ verts, faces = diffdmc(sdf, deform)  # or deform=None
 ```
 
 Input
-* `sdf`: queries SDF values on the grid vertices (see the `test.py` for how to create the grid). The gradient will be back-propagated to the source that generates the SDF values. **[N, N, N, 3]**
-* `deform (optional)`: (learnable) deformation values on the grid vertices, the range must be [-0.5, 0.5], default=None.  **[N, N, N, 3]**
+* `sdf`: queries SDF values on the grid vertices (see the `test.py` for how to create the grid). The gradient will be back-propagated to the source that generates the SDF values. (**[N, N, N, 3]**)
+* `deform (optional)`: (learnable) deformation values on the grid vertices, the range must be [-0.5, 0.5], default=None.  (**[N, N, N, 3]**)
 
 Output
-* `verts`: mesh vertices within the range of [0, 1]
-* `faces`: mesh face indices (starting from 0)
+* `verts`: mesh vertices within the range of [0, 1]. (**[V, 3]**)
+* `faces`: mesh face indices (starting from 0). (**[F, 3] for DiffMC, [F, 4] for DiffDMC**)
 
 The gradient will be automatically computed when `backward` function is called.
 
@@ -64,16 +64,16 @@ We compare our library with DMTet [3] and FlexiCubes [4] on two examples: a simp
 | --- | --- | --- | --- | --- |
 | \# Vertices | 19622 | 19424 | 19944 | 19946 |
 | \# Faces | 39240 | 38844 | 39884 | 39888 |
-| Memory / G | 1.57 | 5.4 | 0.6 | 0.6 |
-| Time / ms | 9.61 | 10 | 1.54 | 1.44 |
+| Memory / G | 1.57 | 5.40 | 0.60 | 0.60 |
+| Time / ms | 9.61 | 10.00 | 1.54 | 1.44 |
 
 
 | Rand Init. | DMTet | FlexiCubes | DiffMC | DiffDMC |
 | --- | --- | --- | --- | --- |
 | \# Vertices | 2597474 | 2785274 | 2651046 | 2713134 |
-| \# Faces | 4774241 | 4364842 | 4717384 | 2215690 |
+| \# Faces | 4774241 | 4364842 | 4717384 | 4431380 |
 | Memory / G | 3.07 | 4.07 | 0.59 | 0.45 |
-| Time / ms | 49.1 | 65.35 | 2.55 | 2.78 |
+| Time / ms | 49.10 | 65.35 | 2.55 | 2.78 |
 
 
 # Citation
