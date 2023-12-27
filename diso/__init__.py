@@ -61,6 +61,7 @@ class DiffMC(nn.Module):
 class DiffDMC(nn.Module):
     def __init__(self, dtype=torch.float32):
         super().__init__()
+        self.dtype = dtype
         if dtype == torch.float32:
             dmc = _C.CUDMCFloat()
         elif dtype == torch.float64:
@@ -96,6 +97,8 @@ class DiffDMC(nn.Module):
         self.func = DDMCFunction
 
     def forward(self, grid, deform=None, isovalue=0.0):
+        if grid.min() > 0:
+            return torch.zeros((0, 3), dtype=self.dtype, device=grid.device), torch.zeros((0, 4), dtype=torch.int32, device=grid.device)
         dimX, dimY, dimZ = grid.shape
         grid = F.pad(grid, (1, 1, 1, 1, 1, 1), "constant", 1)
         if deform is not None:
