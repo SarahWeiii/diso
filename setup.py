@@ -54,7 +54,7 @@ def get_extensions():
 
 setup(
     name="diso",
-    version="0.0.4",
+    version="0.0.5",
     author_email="xiwei@ucsd.edu",
     keywords="differentiable iso-surface extraction",
     description="Differentiable Iso-Surface Extraction Package",
