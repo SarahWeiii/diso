@@ -779,8 +779,8 @@ namespace cudualmc
       Scalar d = ds[dim];
       // dmc.used_cell_mc_vert[3 * used_index + dim] = 0;
 
-      bool entering = d0 <= iso && d >= iso;
-      bool exiting = d <= iso && d0 >= iso;
+      bool entering = d0 < iso && d >= iso;
+      bool exiting = d < iso && d0 >= iso;
       if (entering || exiting)
       {
         IndexType id = first++;
