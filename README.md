@@ -49,7 +49,7 @@ Input
 
 Output
 * `verts`: mesh vertices within the range of [0, 1]. (**[V, 3]**)
-* `faces`: mesh face indices (starting from 0). (**[F, 3] for DiffMC, [F, 4] for DiffDMC**)
+* `faces`: mesh face indices (starting from 0). (**[F, 3]**). Note `DiffMC` can return quads with `return_quads` set as True.
 
 The gradient will be automatically computed when `backward` function is called.
 
