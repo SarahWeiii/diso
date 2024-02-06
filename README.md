@@ -53,6 +53,16 @@ Output
 
 The gradient will be automatically computed when `backward` function is called.
 
+# Batch Training
+Each instance of `diffmc` or `diffdmc` can handle only a single shape because it saves intermediate results for the backward pass. If you wish to implement batch training, you can construct `batchsize` extractors as follows:
+```
+extractors = [DiffMC(dtype=torch.float32).cuda() for i in batchsize]
+for bs in range(batchsize):
+    verts, faces = extractors[bs](sdf, deform)
+    # compute and accumulate losses
+loss.backward()
+```
+
 # Speed Comparison
 We compare our library with DMTet [3] and FlexiCubes [4] on two examples: a simple round cube and a random initialized signed distance function.
 
