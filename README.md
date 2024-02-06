@@ -62,6 +62,7 @@ for bs in range(batchsize):
     # compute and accumulate losses
 loss.backward()
 ```
+Note: It is suggested to create the extractors outside the `epoch` loop so that they can be reused by different iterations and avoid allocating memory every time.
 
 # Speed Comparison
 We compare our library with DMTet [3] and FlexiCubes [4] on two examples: a simple round cube and a random initialized signed distance function.
