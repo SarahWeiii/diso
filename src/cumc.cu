@@ -409,6 +409,19 @@ namespace cumc
     }
   }
 
+  template <typename Scalar>
+  inline __device__ Scalar atomicAddDouble(Scalar* address, Scalar val)
+  {
+      unsigned long long int* address_as_ull = (unsigned long long int*)address;
+      unsigned long long int old = *address_as_ull, assumed;
+      do {
+          assumed = old;
+          old = atomicCAS(address_as_ull, assumed,
+                  __double_as_longlong(val + __longlong_as_double(assumed)));
+      } while (assumed != old);
+      return old;
+  }
+
   template <typename Scalar, typename IndexType>
   inline __device__ void adjComputeMcVert(CuMC<Scalar, IndexType> &mc,
                                           Scalar const *__restrict__ data, Vertex<Scalar> const *__restrict__ deform, IndexType x, IndexType y,
@@ -437,19 +450,19 @@ namespace cumc
 
     if (deform != NULL)
     {
-      atomicAdd(&adj_deform[v0].x, adj_p0.x);
-      atomicAdd(&adj_deform[v0].y, adj_p0.y);
-      atomicAdd(&adj_deform[v0].z, adj_p0.z);
-      atomicAdd(&adj_deform[v1].x, adj_p1.x);
-      atomicAdd(&adj_deform[v1].y, adj_p1.y);
-      atomicAdd(&adj_deform[v1].z, adj_p1.z);
+      atomicAddDouble(&adj_deform[v0].x, adj_p0.x);
+      atomicAddDouble(&adj_deform[v0].y, adj_p0.y);
+      atomicAddDouble(&adj_deform[v0].z, adj_p0.z);
+      atomicAddDouble(&adj_deform[v1].x, adj_p1.x);
+      atomicAddDouble(&adj_deform[v1].y, adj_p1.y);
+      atomicAddDouble(&adj_deform[v1].z, adj_p1.z);
     }
 
     Scalar adj_d0 = (iso - d1) / ((d1 - d0) * (d1 - d0)) * adj_t;
     Scalar adj_d1 = (d0 - iso) / ((d1 - d0) * (d1 - d0)) * adj_t;
 
-    atomicAdd(&adj_data[v0], adj_d0);
-    atomicAdd(&adj_data[v1], adj_d1);
+    atomicAddDouble(&adj_data[v0], adj_d0);
+    atomicAddDouble(&adj_data[v1], adj_d1);
   }
 
   template <typename Scalar, typename IndexType>
