@@ -20,8 +20,7 @@ python test/example.py
 ```
 
 Note:
-* `DiffMC` generates guaranteed watertight manifold meshes w/ or w/o grid deformation.
-* `DiffDMC` generates watertight manifold meshes when grid deformation is disabled. When enabling grid deformation, self-intersection may occur, but the face connectivity remains manifold.
+* `DiffMC` and `DiffDMC` generate watertight manifold meshes when grid deformation is disabled. When enabling grid deformation, self-intersection may occur, but the face connectivity remains manifold.
 * `DiffDMC` can produce a more uniform triangle distribution and smoother surfaces than `DiffMC` and supports generating quad meshes (in the example, the quad is automatically divided into two triangles by `trimesh`).
 
 <p align="center">
