@@ -15,7 +15,7 @@ class SphereSDF:
     def __call__(self, points):
         return torch.norm(points - self.center, dim=-1) - self.radius
 
-
+device = "cuda:0"
 os.makedirs("out", exist_ok=True)
 
 # define a sphere
@@ -26,8 +26,8 @@ radius = 0.5
 sphere = SphereSDF(torch.tensor([s_x, s_y, s_z]), radius)
 
 # create the iso-surface extractor
-diffmc = DiffMC(dtype=torch.float32).cuda()
-diffdmc = DiffDMC(dtype=torch.float32).cuda()
+diffmc = DiffMC(dtype=torch.float32).to(device)
+diffdmc = DiffDMC(dtype=torch.float32).to(device)
 
 # create a grid
 dimX, dimY, dimZ = 64, 64, 64
@@ -52,7 +52,7 @@ grids[..., 2] = (
 
 # query the SDF input
 sdf = sphere(grids)
-sdf = sdf.requires_grad_(True).cuda()
+sdf = sdf.requires_grad_(True).to(device)
 sdf = torch.nn.Parameter(sdf.clone().detach(), requires_grad=True)
 
 # randomly deform the grid
@@ -60,7 +60,7 @@ deform = torch.nn.Parameter(
     torch.rand(
         (sdf.shape[0], sdf.shape[1], sdf.shape[2], 3),
         dtype=torch.float32,
-        device="cuda",
+        device=device,
     ),
     requires_grad=True,
 )
