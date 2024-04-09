@@ -26,8 +26,8 @@ radius = 0.5
 sphere = SphereSDF(torch.tensor([s_x, s_y, s_z]), radius)
 
 # create the iso-surface extractor
-diffmc = DiffMC(dtype=torch.float32).to(device)
-diffdmc = DiffDMC(dtype=torch.float32).to(device)
+diffmc = DiffMC(dtype=torch.float32, device=device)
+diffdmc = DiffDMC(dtype=torch.float32, device=device)
 
 # create a grid
 dimX, dimY, dimZ = 64, 64, 64
@@ -66,25 +66,25 @@ deform = torch.nn.Parameter(
 )
 
 # DiffMC with random grid deformation
-verts, faces = diffmc(sdf, 0.5 * torch.tanh(deform))
+verts, faces = diffmc(sdf, 0.5 * torch.tanh(deform), device=device)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffmc_sphere_w_deform.obj")
 
 # DiffMC without grid deformation
-verts, faces = diffmc(sdf, None)
+verts, faces = diffmc(sdf, None, device=device)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffmc_sphere_wo_deform.obj")
 
 # DiffDMC with random grid deformation
-verts, faces = diffdmc(sdf, 0.5 * torch.tanh(deform))
+verts, faces = diffdmc(sdf, 0.5 * torch.tanh(deform), device=device)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffdmc_sphere_w_deform.obj")
 
 # DiffDMC without grid deformation
-verts, faces = diffdmc(sdf, None)
+verts, faces = diffdmc(sdf, None, device=device)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffdmc_sphere_wo_deform.obj")
