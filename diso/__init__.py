@@ -45,7 +45,7 @@ class DiffMC(nn.Module):
 
         self.func = DMCFunction
 
-    def forward(self, grid, deform=None, isovalue=0.0, device="cuda:0"):
+    def forward(self, grid, deform=None, isovalue=0.0, device="cuda:0", normalize=True):
         torch.cuda.set_device(device)
         if grid.min() >= 0 or grid.max() <= 0:
             return torch.zeros((0, 3), dtype=self.dtype, device=grid.device), torch.zeros((0, 3), dtype=torch.int32, device=grid.device)
@@ -55,9 +55,10 @@ class DiffMC(nn.Module):
             deform = F.pad(deform, (0, 0, 1, 1, 1, 1, 1, 1), "constant", 0)
         verts, tris = self.func.apply(grid, deform, isovalue)
         verts = verts - 1
-        verts = verts / (
-            torch.tensor([dimX, dimY, dimZ], dtype=verts.dtype, device=verts.device) - 1
-        )
+        if normalize:
+            verts = verts / (
+                torch.tensor([dimX, dimY, dimZ], dtype=verts.dtype, device=verts.device) - 1
+            )
         return verts, tris.long()
 
 class DiffDMC(nn.Module):
@@ -99,7 +100,7 @@ class DiffDMC(nn.Module):
 
         self.func = DDMCFunction
 
-    def forward(self, grid, deform=None, isovalue=0.0, return_quads=False, device="cuda:0"):
+    def forward(self, grid, deform=None, isovalue=0.0, return_quads=False, device="cuda:0", normalize=True):
         torch.cuda.set_device(device)
         if grid.min() >= 0 or grid.max() <= 0:
             return torch.zeros((0, 3), dtype=self.dtype, device=grid.device), torch.zeros((0, 4), dtype=torch.int32, device=grid.device)
@@ -109,9 +110,10 @@ class DiffDMC(nn.Module):
             deform = F.pad(deform, (0, 0, 1, 1, 1, 1, 1, 1), "constant", 0)
         verts, quads = self.func.apply(grid, deform, isovalue)
         verts = verts - 1
-        verts = verts / (
-            torch.tensor([dimX, dimY, dimZ], dtype=verts.dtype, device=verts.device) - 1
-        )
+        if normalize:
+            verts = verts / (
+                torch.tensor([dimX, dimY, dimZ], dtype=verts.dtype, device=verts.device) - 1
+            )
         if return_quads:
             return verts, quads.long()
         else:

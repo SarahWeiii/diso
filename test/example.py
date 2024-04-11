@@ -7,10 +7,10 @@ from diso import DiffDMC
 
 # define a sphere SDF
 class SphereSDF:
-    def __init__(self, center, radius):
+    def __init__(self, center, radius, margin):
         self.center = center
         self.radius = radius
-        self.aabb = torch.stack([center - radius, center + radius], dim=-1)
+        self.aabb = torch.stack([center - radius - margin, center + radius + margin], dim=-1)
 
     def __call__(self, points):
         return torch.norm(points - self.center, dim=-1) - self.radius
@@ -23,7 +23,7 @@ s_x = 0.
 s_y = 0.
 s_z = 0.
 radius = 0.5
-sphere = SphereSDF(torch.tensor([s_x, s_y, s_z]), radius)
+sphere = SphereSDF(torch.tensor([s_x, s_y, s_z]), radius, 1/64)
 
 # create the iso-surface extractor
 diffmc = DiffMC(dtype=torch.float32, device=device)
