@@ -640,7 +640,7 @@ namespace cudualmc
     // if (valid != 8)
     //   printf("code %d valid %d\n", code, valid);
 
-    if (code != 0 && code != 255 && valid > 4)
+    if (code != 0 && code != 255 && valid == 8)
     {
       dmc.first_cell_used[cell_index] = 1;
     }
