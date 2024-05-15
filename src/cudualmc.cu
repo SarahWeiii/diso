@@ -604,7 +604,9 @@ namespace cudualmc
 
   template <typename Scalar, typename IndexType>
   __global__ void count_used_cells_kernel(CUDualMC<Scalar, IndexType> dmc,
-                                          Scalar const *__restrict__ data, Scalar iso)
+                                          Scalar const *__restrict__ data, 
+                                          bool const *__restrict__ mask, 
+                                          Scalar iso)
   {
     int cell_index = blockIdx.x * blockDim.x + threadIdx.x;
     if (cell_index >= dmc.n_cells)
@@ -619,6 +621,7 @@ namespace cudualmc
       return;
 
     int code = 0;
+    int valid = 0;
     for (int i = 0; i < 8; ++i)
     {
       IndexType cxn = x + mcCorners[i][0];
@@ -628,9 +631,16 @@ namespace cudualmc
       {
         code |= (1 << i);
       }
+      if (mask[dmc.gA(cxn, cyn, czn)] == 1)
+      {
+        valid++;
+      }
     }
 
-    if (code != 0 && code != 255)
+    // if (valid != 8)
+    //   printf("code %d valid %d\n", code, valid);
+
+    if (code != 0 && code != 255 && valid > 4)
     {
       dmc.first_cell_used[cell_index] = 1;
     }
@@ -1056,8 +1066,8 @@ namespace cudualmc
   }
 
   template <typename Scalar, typename IndexType>
-  void CUDualMC<Scalar, IndexType>::forward(Scalar const *d_data, Vertex<Scalar> const *d_deform, IndexType dimX, IndexType dimY,
-                                            IndexType dimZ, Scalar iso)
+  void CUDualMC<Scalar, IndexType>::forward(Scalar const *d_data, Vertex<Scalar> const *d_deform, bool const *d_mask, 
+                                            IndexType dimX, IndexType dimY, IndexType dimZ, Scalar iso)
   {
 
     resize(dimX, dimY, dimZ);
@@ -1066,10 +1076,25 @@ namespace cudualmc
 
     ensure_cell_storage_size(n_cells);
 
+    // // print d_mask
+    // // copy d_mask to device
+    // bool *h_mask = new bool[dimX * dimY * dimZ];
+    // CHECK_CUDA(cudaMemcpy(h_mask, d_mask, dimX * dimY * dimZ * sizeof(bool), cudaMemcpyDeviceToHost));
+    // for (int i = 0; i < dimX; i++)
+    // {
+    //   for (int j = 0; j < dimY; j++)
+    //   {
+    //     for (int k = 0; k < dimZ; k++)
+    //     {
+    //       printf("%d ", h_mask[gA(i, j, k)]);
+    //     }
+    //     printf("\n");
+    //   }
+    // }
+
     // find and index used cells
     CHECK_CUDA(cudaMemset(first_cell_used + n_cells, 0, sizeof(IndexType)));
-    count_used_cells_kernel<<<(n_cells + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(*this, d_data,
-                                                                                     iso);
+    count_used_cells_kernel<<<(n_cells + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(*this, d_data, d_mask, iso);   
 
     cub::DeviceScan::ExclusiveSum(nullptr, temp_storage_bytes, first_cell_used, first_cell_used,
                                   n_cells + 1);
@@ -1127,9 +1152,9 @@ namespace cudualmc
   }
 
   template <typename Scalar, typename IndexType>
-  void CUDualMC<Scalar, IndexType>::backward(Scalar const *d_data, Vertex<Scalar> const *d_deform, IndexType dimX, IndexType dimY,
-                                             IndexType dimZ, Scalar iso, Scalar *adj_d_data, Vertex<Scalar> *adj_d_deform,
-                                             Vertex<Scalar> const *adj_verts)
+  void CUDualMC<Scalar, IndexType>::backward(Scalar const *d_data, Vertex<Scalar> const *d_deform, IndexType dimX, IndexType dimY, 
+                                            IndexType dimZ, Scalar iso, Scalar *adj_d_data, 
+                                            Vertex<Scalar> *adj_d_deform, Vertex<Scalar> const *adj_verts)
   {
     adj_create_dmc_verts_kernel<<<(n_used_cells + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(
         *this, d_data, d_deform, iso, adj_d_data, adj_d_deform, adj_verts);      

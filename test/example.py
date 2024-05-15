@@ -51,7 +51,8 @@ grids[..., 2] = (
 )
 
 # query the SDF input
-sdf = sphere(grids)
+# sdf = sphere(grids)
+sdf = torch.rand((dimX, dimY, dimZ), dtype=torch.float32, device=device) - 0.1
 sdf = sdf.requires_grad_(True).to(device)
 sdf = torch.nn.Parameter(sdf.clone().detach(), requires_grad=True)
 
@@ -65,11 +66,15 @@ deform = torch.nn.Parameter(
     requires_grad=True,
 )
 
-# DiffMC with random grid deformation
-verts, faces = diffmc(sdf, 0.5 * torch.tanh(deform), device=device)
-verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
-mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
-mesh.export("out/diffmc_sphere_w_deform.obj")
+# create the mask which is 1 inside the 0.1 raius sphere and 0 outside
+mask = (torch.norm(grids - sphere.center, dim=-1) < 0.5).bool().to(device)
+# mask = torch.ones((dimX, dimY, dimZ), dtype=torch.bool, device=device)
+
+# # DiffMC with random grid deformation
+# verts, faces = diffmc(sdf, 0.5 * torch.tanh(deform), device=device)
+# verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
+# mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
+# mesh.export("out/diffmc_sphere_w_deform.obj")
 
 # DiffMC without grid deformation
 verts, faces = diffmc(sdf, None, device=device)
@@ -77,14 +82,15 @@ verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffmc_sphere_wo_deform.obj")
 
-# DiffDMC with random grid deformation
-verts, faces = diffdmc(sdf, 0.5 * torch.tanh(deform), device=device)
-verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
-mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
-mesh.export("out/diffdmc_sphere_w_deform.obj")
+# # DiffDMC with random grid deformation
+# verts, faces = diffdmc(sdf, 0.5 * torch.tanh(deform), mask, device=device)
+# verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
+# print(verts.shape, faces.shape)
+# mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
+# mesh.export("out/diffdmc_sphere_w_deform.obj")
 
 # DiffDMC without grid deformation
-verts, faces = diffdmc(sdf, None, device=device)
+verts, faces = diffdmc(sdf, None, mask, device=device)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffdmc_sphere_wo_deform.obj")

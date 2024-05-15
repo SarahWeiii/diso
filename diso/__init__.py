@@ -73,11 +73,11 @@ class DiffDMC(nn.Module):
 
         class DDMCFunction(Function):
             @staticmethod
-            def forward(ctx, grid, deform, isovalue):
+            def forward(ctx, grid, deform, mask, isovalue):
                 if deform is None:
-                    verts, quads = dmc.forward(grid, isovalue)
+                    verts, quads = dmc.forward(grid, mask, isovalue)
                 else:
-                    verts, quads = dmc.forward(grid, deform, isovalue)
+                    verts, quads = dmc.forward(grid, deform, mask, isovalue)
                 ctx.grid = grid
                 ctx.deform = deform
                 ctx.isovalue = isovalue
@@ -100,7 +100,7 @@ class DiffDMC(nn.Module):
 
         self.func = DDMCFunction
 
-    def forward(self, grid, deform=None, isovalue=0.0, return_quads=False, device="cuda:0", normalize=True):
+    def forward(self, grid, deform=None, mask=None, isovalue=0.0, return_quads=False, device="cuda:0", normalize=True):
         torch.cuda.set_device(device)
         if grid.min() >= 0 or grid.max() <= 0:
             return torch.zeros((0, 3), dtype=self.dtype, device=grid.device), torch.zeros((0, 4), dtype=torch.int32, device=grid.device)
@@ -108,7 +108,9 @@ class DiffDMC(nn.Module):
         grid = F.pad(grid, (1, 1, 1, 1, 1, 1), "constant", 1)
         if deform is not None:
             deform = F.pad(deform, (0, 0, 1, 1, 1, 1, 1, 1), "constant", 0)
-        verts, quads = self.func.apply(grid, deform, isovalue)
+        if mask is not None:
+            mask = F.pad(mask, (1, 1, 1, 1, 1, 1), "constant", 0)
+        verts, quads = self.func.apply(grid, deform, mask, isovalue)
         verts = verts - 1
         if normalize:
             verts = verts / (
