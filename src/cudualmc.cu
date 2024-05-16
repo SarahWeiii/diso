@@ -637,10 +637,7 @@ namespace cudualmc
       }
     }
 
-    // if (valid != 8)
-    //   printf("code %d valid %d\n", code, valid);
-
-    if (code != 0 && code != 255 && valid > 0)
+    if (code != 0 && code != 255 && valid == 8)
     {
       dmc.first_cell_used[cell_index] = 1;
     }
@@ -805,10 +802,13 @@ namespace cudualmc
 
   template <typename Scalar, typename IndexType>
   inline __device__ __host__ uint8_t getCellCode(CUDualMC<Scalar, IndexType> &dmc,
-                                                 Scalar const *__restrict__ data, IndexType cx,
+                                                 Scalar const *__restrict__ data, 
+                                                 bool const *__restrict__ mask,
+                                                 IndexType cx,
                                                  IndexType cy, IndexType cz, Scalar iso)
   {
     int code = 0;
+    int valid = 0;
     for (int i = 0; i < 8; ++i)
     {
       IndexType cxn = cx + mcCorners[i][0];
@@ -818,16 +818,24 @@ namespace cudualmc
       {
         code |= (1 << i);
       }
+      if (mask[dmc.gA(cxn, cyn, czn)] == 1)
+      {
+        valid++;
+      }
     }
-    return code;
+    if (valid == 8)
+      return code;
+    return 0;
   }
 
   template <typename Scalar, typename IndexType>
   inline __device__ uint8_t getGoodCellCode(CUDualMC<Scalar, IndexType> &dmc,
-                                            Scalar const *__restrict__ data, IndexType cx,
+                                            Scalar const *__restrict__ data, 
+                                            bool const *__restrict__ mask,
+                                            IndexType cx,
                                             IndexType cy, IndexType cz, Scalar iso)
   {
-    uint8_t cellCode = getCellCode(dmc, data, cx, cy, cz, iso);
+    uint8_t cellCode = getCellCode(dmc, data, mask, cx, cy, cz, iso);
     uint8_t direction = problematicConfigs[cellCode];
     if (direction != 255)
     {
@@ -838,7 +846,7 @@ namespace cudualmc
       if (neighborCoords[component] >= 0 && neighborCoords[component] < (dmc.dims[component] - 1))
       {
         uint8_t neighborCellCode =
-            getCellCode(dmc, data, neighborCoords[0], neighborCoords[1], neighborCoords[2], iso);
+            getCellCode(dmc, data, mask, neighborCoords[0], neighborCoords[1], neighborCoords[2], iso);
         if (problematicConfigs[uint8_t(neighborCellCode)] != 255)
         {
           cellCode ^= 0xff;
@@ -850,7 +858,9 @@ namespace cudualmc
 
   template <typename Scalar, typename IndexType>
   __global__ void count_cell_patches_kernel(CUDualMC<Scalar, IndexType> dmc,
-                                            Scalar const *__restrict__ data, Scalar iso)
+                                            Scalar const *__restrict__ data, 
+                                            bool const *__restrict__ mask,
+                                            Scalar iso)
   {
     int used_index = blockIdx.x * blockDim.x + threadIdx.x;
     if (used_index >= dmc.n_used_cells)
@@ -865,7 +875,7 @@ namespace cudualmc
     if (x >= dmc.dims[0] - 1 || y >= dmc.dims[1] - 1 || z >= dmc.dims[2] - 1)
       return;
 
-    uint8_t cubeCode = getGoodCellCode(dmc, data, x, y, z, iso);
+    uint8_t cubeCode = getGoodCellCode(dmc, data, mask, x, y, z, iso);
     dmc.used_cell_code[used_index] = cubeCode;
 
     int num = mcFirstPatchIndex[static_cast<int>(cubeCode) + 1] - mcFirstPatchIndex[cubeCode];
@@ -1133,7 +1143,7 @@ namespace cudualmc
 
     // count mc patches (dmc verts)
     count_cell_patches_kernel<<<(n_used_cells + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(
-        *this, d_data, iso);
+        *this, d_data, d_mask, iso);
 
     cub::DeviceScan::ExclusiveSum(nullptr, temp_storage_bytes, used_to_first_mc_patch,
                                   used_to_first_mc_patch, n_used_cells + 1);

@@ -297,7 +297,7 @@ namespace cumc
       }
     }
 
-    if (code != 0 && code != 255 && valid > 0)
+    if (code != 0 && code != 255 && valid == 8)
     {
       mc.first_cell_used[cell_index] = 1;
     }
@@ -461,10 +461,13 @@ namespace cumc
 
   template <typename Scalar, typename IndexType>
   inline __device__ __host__ uint8_t getCellCode(CuMC<Scalar, IndexType> &mc,
-                                                 Scalar const *__restrict__ data, IndexType cx,
+                                                 Scalar const *__restrict__ data, 
+                                                 bool const *__restrict__ mask,
+                                                 IndexType cx,
                                                  IndexType cy, IndexType cz, Scalar iso)
   {
     int code = 0;
+    int valid = 0;
     for (int i = 0; i < 8; ++i)
     {
       IndexType cxn = cx + mcCorners[i][0];
@@ -474,8 +477,14 @@ namespace cumc
       {
         code |= (1 << i);
       }
+      if (mask[mc.gA(cxn, cyn, czn)] == 1)
+      {
+        valid++;
+      }
     }
-    return code;
+    if (valid == 8)
+      return code;
+    return 0;
   }
 
   template <typename Scalar, typename IndexType>
@@ -520,10 +529,12 @@ namespace cumc
 
   template <typename Scalar, typename IndexType>
   inline __device__ uint8_t getGoodCellCode(CuMC<Scalar, IndexType> &mc,
-                                            Scalar const *__restrict__ data, IndexType cx,
+                                            Scalar const *__restrict__ data, 
+                                            bool const *__restrict__ mask,
+                                            IndexType cx,
                                             IndexType cy, IndexType cz, Scalar iso)
   {
-    uint8_t cellCode = getCellCode(mc, data, cx, cy, cz, iso);
+    uint8_t cellCode = getCellCode(mc, data, mask, cx, cy, cz, iso);
     // uint8_t direction = problematicConfigs[cellCode];
     // if (direction != 255)
     // {
@@ -546,7 +557,9 @@ namespace cumc
 
   template <typename Scalar, typename IndexType>
   __global__ void count_cell_mc_tris_kernel(CuMC<Scalar, IndexType> mc,
-                                         Scalar const *__restrict__ data, Scalar iso)
+                                         Scalar const *__restrict__ data, 
+                                         bool const *__restrict__ mask,
+                                         Scalar iso)
   {
     int used_index = blockIdx.x * blockDim.x + threadIdx.x;
     if (used_index >= mc.n_used_cells)
@@ -561,7 +574,7 @@ namespace cumc
     if (x >= mc.dims[0] - 1 || y >= mc.dims[1] - 1 || z >= mc.dims[2] - 1)
       return;
 
-    uint8_t cubeCode = getGoodCellCode(mc, data, x, y, z, iso);
+    uint8_t cubeCode = getGoodCellCode(mc, data, mask, x, y, z, iso);
     mc.used_cell_code[used_index] = cubeCode;
 
     int num = firstMarchingCubesId[static_cast<int>(cubeCode) + 1] - firstMarchingCubesId[cubeCode];
@@ -718,7 +731,7 @@ namespace cumc
 
     // count mc triangles
     count_cell_mc_tris_kernel<<<(n_used_cells + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(
-        *this, d_data, iso);
+        *this, d_data, d_mask, iso);
     // printf("count cell mc tris kernel done\n");
     cub::DeviceScan::ExclusiveSum(nullptr, temp_storage_bytes, used_to_first_mc_tri,
                                   used_to_first_mc_tri, n_used_cells + 1);

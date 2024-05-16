@@ -19,6 +19,10 @@ class SphereSDF:
 device = "cuda:0"
 os.makedirs("out", exist_ok=True)
 
+# import ipdb ; ipdb.set_trace()
+# data = torch.load("4-sdf.pt")
+
+
 # define a sphere
 s_x = 0.
 s_y = 0.
@@ -68,7 +72,7 @@ deform = torch.nn.Parameter(
 )
 
 # create the mask which is 1 inside the 0.1 raius sphere and 0 outside
-mask = (torch.norm(grids - sphere.center, dim=-1) <= 0.5).bool().to(device)
+mask = (torch.norm(grids - sphere.center, dim=-1) <= 0.55).bool().to(device)
 # mask = torch.ones((dimX, dimY, dimZ), dtype=torch.bool, device=device)
 
 # # DiffMC with random grid deformation
