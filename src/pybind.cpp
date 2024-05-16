@@ -40,10 +40,12 @@ namespace cumc
 
     std::tuple<torch::Tensor, torch::Tensor> forward(torch::Tensor grid,
                                                      torch::Tensor deform,
+                                                     torch::Tensor mask,
                                                      Scalar iso)
     {
       CHECK_INPUT(grid);
       CHECK_INPUT(deform);
+      CHECK_INPUT(mask);
 
       torch::ScalarType scalarType;
       if constexpr (std::is_same<Scalar, double>())
@@ -58,6 +60,8 @@ namespace cumc
                             "grid type must match the mc class");
       TORCH_INTERNAL_ASSERT(deform.dtype() == scalarType,
                             "deformation type must match the mc class");
+      TORCH_INTERNAL_ASSERT(mask.dtype() == torch::kBool,
+                            "mask type must be Bool");
 
       torch::ScalarType indexType = torch::kInt;
       if constexpr (std::is_same<IndexType, int>())
@@ -73,7 +77,10 @@ namespace cumc
       IndexType dimY = grid.size(1);
       IndexType dimZ = grid.size(2);
 
-      mc.forward(grid.data_ptr<Scalar>(), reinterpret_cast<Vertex<Scalar> *>(deform.data_ptr<Scalar>()), dimX, dimY, dimZ, iso);
+      mc.forward(grid.data_ptr<Scalar>(), 
+                  reinterpret_cast<Vertex<Scalar> *>(deform.data_ptr<Scalar>()), 
+                  mask.data_ptr<bool>(), 
+                  dimX, dimY, dimZ, iso);
 
       auto verts =
           torch::from_blob(
@@ -90,9 +97,11 @@ namespace cumc
     }
 
     std::tuple<torch::Tensor, torch::Tensor> forward(torch::Tensor grid,
+                                                     torch::Tensor mask,
                                                      Scalar iso)
     {
       CHECK_INPUT(grid);
+      CHECK_INPUT(mask);
 
       torch::ScalarType scalarType;
       if constexpr (std::is_same<Scalar, double>())
@@ -105,6 +114,8 @@ namespace cumc
       }
       TORCH_INTERNAL_ASSERT(grid.dtype() == scalarType,
                             "grid type must match the mc class");
+      TORCH_INTERNAL_ASSERT(mask.dtype() == torch::kBool,
+                            "mask type must be Bool");
 
       torch::ScalarType indexType = torch::kInt;
       if constexpr (std::is_same<IndexType, int>())
@@ -120,7 +131,7 @@ namespace cumc
       IndexType dimY = grid.size(1);
       IndexType dimZ = grid.size(2);
 
-      mc.forward(grid.data_ptr<Scalar>(), NULL, dimX, dimY, dimZ, iso);
+      mc.forward(grid.data_ptr<Scalar>(), NULL, mask.data_ptr<bool>(), dimX, dimY, dimZ, iso);
 
       auto verts =
           torch::from_blob(
@@ -432,16 +443,16 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 {
   pybind11::class_<cumc::CUMC<double, int>>(m, "CUMCDouble")
       .def(py::init<>())
-      .def("forward", pybind11::overload_cast<torch::Tensor, torch::Tensor, double>(&cumc::CUMC<double, int>::forward))
+      .def("forward", pybind11::overload_cast<torch::Tensor, torch::Tensor, torch::Tensor, double>(&cumc::CUMC<double, int>::forward))
       .def("backward", pybind11::overload_cast<torch::Tensor, torch::Tensor, double, torch::Tensor, torch::Tensor, torch::Tensor>(&cumc::CUMC<double, int>::backward))
-      .def("forward", pybind11::overload_cast<torch::Tensor, double>(&cumc::CUMC<double, int>::forward))
+      .def("forward", pybind11::overload_cast<torch::Tensor, torch::Tensor, double>(&cumc::CUMC<double, int>::forward))
       .def("backward", pybind11::overload_cast<torch::Tensor, double, torch::Tensor, torch::Tensor>(&cumc::CUMC<double, int>::backward));
 
   pybind11::class_<cumc::CUMC<float, int>>(m, "CUMCFloat")
       .def(py::init<>())
-      .def("forward", pybind11::overload_cast<torch::Tensor, torch::Tensor, float>(&cumc::CUMC<float, int>::forward))
+      .def("forward", pybind11::overload_cast<torch::Tensor, torch::Tensor, torch::Tensor, float>(&cumc::CUMC<float, int>::forward))
       .def("backward", pybind11::overload_cast<torch::Tensor, torch::Tensor, float, torch::Tensor, torch::Tensor, torch::Tensor>(&cumc::CUMC<float, int>::backward))
-      .def("forward", pybind11::overload_cast<torch::Tensor, float>(&cumc::CUMC<float, int>::forward))
+      .def("forward", pybind11::overload_cast<torch::Tensor, torch::Tensor, float>(&cumc::CUMC<float, int>::forward))
       .def("backward", pybind11::overload_cast<torch::Tensor, float, torch::Tensor, torch::Tensor>(&cumc::CUMC<float, int>::backward));
   
   pybind11::class_<cudualmc::CUDMC<double, int>>(m, "CUDMCDouble")

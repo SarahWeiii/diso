@@ -264,7 +264,9 @@ namespace cumc
 
   template <typename Scalar, typename IndexType>
   __global__ void count_used_cells_kernel(CuMC<Scalar, IndexType> mc,
-                                          Scalar const *__restrict__ data, Scalar iso)
+                                          Scalar const *__restrict__ data, 
+                                          bool const *__restrict__ mask, 
+                                          Scalar iso)
   {
     int cell_index = blockIdx.x * blockDim.x + threadIdx.x;
     if (cell_index >= mc.n_cells)
@@ -279,6 +281,7 @@ namespace cumc
       return;
 
     int code = 0;
+    int valid = 0;
     for (int i = 0; i < 8; ++i)
     {
       IndexType cxn = x + mcCorners[i][0];
@@ -288,9 +291,13 @@ namespace cumc
       {
         code |= (1 << i);
       }
+      if (mask[mc.gA(cxn, cyn, czn)] == 1)
+      {
+        valid++;
+      }
     }
 
-    if (code != 0 && code != 255)
+    if (code != 0 && code != 255 && valid > 0)
     {
       mc.first_cell_used[cell_index] = 1;
     }
@@ -649,7 +656,8 @@ namespace cumc
   }
 
   template <typename Scalar, typename IndexType>
-  void CuMC<Scalar, IndexType>::forward(Scalar const *d_data, Vertex<Scalar> const *d_deform, IndexType dimX, IndexType dimY,
+  void CuMC<Scalar, IndexType>::forward(Scalar const *d_data, Vertex<Scalar> const *d_deform, bool const *d_mask, 
+                                        IndexType dimX, IndexType dimY,
                                         IndexType dimZ, Scalar iso)
   {
 
@@ -661,8 +669,7 @@ namespace cumc
 
     // find and index used cells
     CHECK_CUDA(cudaMemset(first_cell_used + n_cells, 0, sizeof(IndexType)));
-    count_used_cells_kernel<<<(n_cells + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(*this, d_data,
-                                                                                     iso);
+    count_used_cells_kernel<<<(n_cells + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(*this, d_data, d_mask, iso);
 
     cub::DeviceScan::ExclusiveSum(nullptr, temp_storage_bytes, first_cell_used, first_cell_used,
                                   n_cells + 1);

@@ -10,7 +10,8 @@ class SphereSDF:
     def __init__(self, center, radius, margin):
         self.center = center
         self.radius = radius
-        self.aabb = torch.stack([center - radius - margin, center + radius + margin], dim=-1)
+        # self.aabb = torch.stack([center - radius - margin, center + radius + margin], dim=-1)
+        self.aabb = torch.tensor([[-1,1],[-1,1],[-1,1]], dtype=torch.float32)
 
     def __call__(self, points):
         return torch.norm(points - self.center, dim=-1) - self.radius
@@ -51,8 +52,8 @@ grids[..., 2] = (
 )
 
 # query the SDF input
-# sdf = sphere(grids)
-sdf = torch.rand((dimX, dimY, dimZ), dtype=torch.float32, device=device) - 0.1
+sdf = sphere(grids)
+# sdf = torch.rand((dimX, dimY, dimZ), dtype=torch.float32, device=device) - 0.1
 sdf = sdf.requires_grad_(True).to(device)
 sdf = torch.nn.Parameter(sdf.clone().detach(), requires_grad=True)
 
@@ -67,7 +68,7 @@ deform = torch.nn.Parameter(
 )
 
 # create the mask which is 1 inside the 0.1 raius sphere and 0 outside
-mask = (torch.norm(grids - sphere.center, dim=-1) < 0.5).bool().to(device)
+mask = (torch.norm(grids - sphere.center, dim=-1) <= 0.5).bool().to(device)
 # mask = torch.ones((dimX, dimY, dimZ), dtype=torch.bool, device=device)
 
 # # DiffMC with random grid deformation
@@ -77,7 +78,7 @@ mask = (torch.norm(grids - sphere.center, dim=-1) < 0.5).bool().to(device)
 # mesh.export("out/diffmc_sphere_w_deform.obj")
 
 # DiffMC without grid deformation
-verts, faces = diffmc(sdf, None, device=device)
+verts, faces = diffmc(sdf, None, mask, device=device)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffmc_sphere_wo_deform.obj")

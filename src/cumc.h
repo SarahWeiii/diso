@@ -131,8 +131,8 @@ namespace cumc
     __host__ void ensure_tri_storage_size(size_t tri_count);
     __host__ void ensure_vert_storage_size(size_t vert_count);
 
-    __host__ void forward(Scalar const *d_data, Vertex<Scalar> const *d_deform, IndexType dimX, IndexType dimY, IndexType dimZ,
-                          Scalar iso);
+    __host__ void forward(Scalar const *d_data, Vertex<Scalar> const *d_deform, bool const *d_mask, 
+                          IndexType dimX, IndexType dimY, IndexType dimZ, Scalar iso);
     __host__ void backward(Scalar const *d_data, Vertex<Scalar> const *d_deform, IndexType dimX, IndexType dimY,
                            IndexType dimZ, Scalar iso, Scalar *adj_d_data, Vertex<Scalar> *adj_d_deform,
                            Vertex<Scalar> const *adj_verts);
