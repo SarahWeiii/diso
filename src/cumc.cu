@@ -287,7 +287,7 @@ namespace cumc
       IndexType cxn = x + mcCorners[i][0];
       IndexType cyn = y + mcCorners[i][1];
       IndexType czn = z + mcCorners[i][2];
-      if (data[mc.gA(cxn, cyn, czn)] >= iso)
+      if (data[mc.gA(cxn, cyn, czn)] > iso)
       {
         code |= (1 << i);
       }
@@ -297,7 +297,7 @@ namespace cumc
       }
     }
 
-    if (code != 0 && code != 255 && valid == 8)
+    if (code != 0 && code != 255)
     {
       mc.first_cell_used[cell_index] = 1;
     }
@@ -338,11 +338,11 @@ namespace cumc
     Scalar dz = data[mc.gA(x, y, z + 1)];
 
     int num = 0;
-    if ((d0 < iso && dx >= iso) || (dx < iso && d0 >= iso))
+    if ((d0 < iso && dx > iso) || (dx < iso && d0 > iso))
       num++;
-    if ((d0 < iso && dy >= iso) || (dy < iso && d0 >= iso))
+    if ((d0 < iso && dy > iso) || (dy < iso && d0 > iso))
       num++;
-    if ((d0 < iso && dz >= iso) || (dz < iso && d0 >= iso))
+    if ((d0 < iso && dz > iso) || (dz < iso && d0 > iso))
       num++;
     mc.used_to_first_mc_vert[used_index] = num;
   }
@@ -396,19 +396,19 @@ namespace cumc
     Scalar dz = data[mc.gA(x, y, z + 1)];
 
     IndexType first = mc.used_to_first_mc_vert[used_index];
-    if ((d0 < iso && dx >= iso) || (dx < iso && d0 >= iso))
+    if ((d0 < iso && dx > iso) || (dx < iso && d0 > iso))
     {
       auto p = computeMcVert(mc, data, deform, x, y, z, 0, iso);
       mc.verts_type[first] = 0;
       mc.verts[first++] = p;
     }
-    if ((d0 < iso && dy >= iso) || (dy < iso && d0 >= iso))
+    if ((d0 < iso && dy > iso) || (dy < iso && d0 > iso))
     {
       auto p = computeMcVert(mc, data, deform, x, y, z, 1, iso);
       mc.verts_type[first] = 1;
       mc.verts[first++] = p;
     }
-    if ((d0 < iso && dz >= iso) || (dz < iso && d0 >= iso))
+    if ((d0 < iso && dz > iso) || (dz < iso && d0 > iso))
     {
       auto p = computeMcVert(mc, data, deform, x, y, z, 2, iso);
       mc.verts_type[first] = 2;
@@ -473,7 +473,7 @@ namespace cumc
       IndexType cxn = cx + mcCorners[i][0];
       IndexType cyn = cy + mcCorners[i][1];
       IndexType czn = cz + mcCorners[i][2];
-      if (data[mc.gA(cxn, cyn, czn)] >= iso)
+      if (data[mc.gA(cxn, cyn, czn)] > iso)
       {
         code |= (1 << i);
       }
@@ -482,9 +482,7 @@ namespace cumc
         valid++;
       }
     }
-    if (valid == 8)
-      return code;
-    return 0;
+    return code;
   }
 
   template <typename Scalar, typename IndexType>
@@ -510,17 +508,17 @@ namespace cumc
     Scalar dz = data[mc.gA(x, y, z + 1)];
 
     IndexType first = mc.used_to_first_mc_vert[used_index];
-    if ((d0 < iso && dx >= iso) || (dx < iso && d0 >= iso))
+    if ((d0 < iso && dx > iso) || (dx < iso && d0 > iso))
     {
       Vertex<Scalar> adj_p = adj_verts[first++];
       adjComputeMcVert(mc, data, deform, x, y, z, 0, iso, adj_data, adj_deform, adj_p);
     }
-    if ((d0 < iso && dy >= iso) || (dy < iso && d0 >= iso))
+    if ((d0 < iso && dy > iso) || (dy < iso && d0 > iso))
     {
       Vertex<Scalar> adj_p = adj_verts[first++];
       adjComputeMcVert(mc, data, deform, x, y, z, 1, iso, adj_data, adj_deform, adj_p);
     }
-    if ((d0 < iso && dz >= iso) || (dz < iso && d0 >= iso))
+    if ((d0 < iso && dz > iso) || (dz < iso && d0 > iso))
     {
       Vertex<Scalar> adj_p = adj_verts[first++];
       adjComputeMcVert(mc, data, deform, x, y, z, 2, iso, adj_data, adj_deform, adj_p);
