@@ -658,44 +658,6 @@ namespace cumc
 
       // printf("i %d, used_index %d, num %d, exi %d, eyi %d, ezi %d, eused_index %d, vert_id %d, edgeNr %d, id %d\n", i, used_index, num, exi, eyi, ezi, eused_index, mc.used_to_first_mc_vert[eused_index], edgeNr, id);
     }
-    // int eid, exi, eyi, ezi, edgeNr, eused_index;
-    // int i=0;
-    // int j=0;
-    // while (i<num)
-    // {
-    //   // t_1
-    //   eid = marchingCubesIds[firstIn + i];
-    //   exi = x + mcEdgeLocations[eid][0];
-    //   eyi = y + mcEdgeLocations[eid][1];
-    //   ezi = z + mcEdgeLocations[eid][2];
-    //   edgeNr = mcEdgeLocations[eid][3];
-    //   eused_index = mc.first_cell_used[mc.gA(exi, eyi, ezi)];
-    //   int id_i = mc.used_to_first_mc_vert[used_index] + edgeNr;
-    //   i++;
-
-    //   // t_2
-    //   eid = marchingCubesIds[firstIn + i];
-    //   exi = x + mcEdgeLocations[eid][0];
-    //   eyi = y + mcEdgeLocations[eid][1];
-    //   ezi = z + mcEdgeLocations[eid][2];
-    //   edgeNr = mcEdgeLocations[eid][3];
-    //   eused_index = mc.first_cell_used[mc.gA(exi, eyi, ezi)];
-    //   int id_j = mc.used_to_first_mc_vert[used_index] + edgeNr;
-    //   i++;
-
-    //   // t_3
-    //   eid = marchingCubesIds[firstIn + i];
-    //   exi = x + mcEdgeLocations[eid][0];
-    //   eyi = y + mcEdgeLocations[eid][1];
-    //   ezi = z + mcEdgeLocations[eid][2];
-    //   edgeNr = mcEdgeLocations[eid][3];
-    //   eused_index = mc.first_cell_used[mc.gA(exi, eyi, ezi)];
-    //   int id_k = mc.used_to_first_mc_vert[used_index] + edgeNr;
-    //   i++;
-
-    //   mc.tris[firstOut + j] = {id_i, id_j, id_k};
-    //   j++;
-    // }
   }
 
   template <typename Scalar, typename IndexType>

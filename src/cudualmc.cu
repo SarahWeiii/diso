@@ -1072,6 +1072,26 @@ namespace cudualmc
       q.data_ptr()[i] =
           get_quad_index(dmc, dmc.first_cell_used[dmc.gA(x + dx, y + dy, z + dz)], eid);
     }
+
+    // compute the edge lengths of the quad
+    Vertex<Scalar> v[4];
+    for (int i = 0; i < 4; ++i)
+    {
+      v[i] = dmc.verts[q.data_ptr()[i]];
+    }
+    Scalar edge_lengths[4];
+    for (int i = 0; i < 4; ++i)
+    {
+      int j = (i + 1) % 4;
+      edge_lengths[i] = (v[i] - v[j]).norm();
+    }
+    if (edge_lengths[0] > sqrt(3) || edge_lengths[1] > sqrt(3) || edge_lengths[2] > sqrt(3) || edge_lengths[3] > sqrt(3))
+    {
+      for (int i = 0; i < 4; ++i)
+      {
+        q.data_ptr()[i] = -1;
+      }
+    }
     dmc.quads[quad_index] = q;
   }
 

@@ -151,4 +151,6 @@ class DiffDMC(nn.Module):
             faces_2 = quads[angles1 >= angles2]
             faces = torch.cat([faces_1[:, [0, 1, 3, 1, 2, 3]].view(-1, 3), faces_2[:, [0, 1, 2, 0, 2, 3]].view(-1, 3)], dim=0)
             
+            faces = faces[faces[:, 0] != -1]
+
             return verts, faces.long()
