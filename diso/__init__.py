@@ -61,6 +61,7 @@ class DiffMC(nn.Module):
             verts = verts / (
                 torch.tensor([dimX, dimY, dimZ], dtype=verts.dtype, device=verts.device) - 1
             )
+        tris = tris[tris[:, 0] != -1]
         return verts, tris.long()
 
 class DiffDMC(nn.Module):

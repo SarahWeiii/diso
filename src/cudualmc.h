@@ -19,6 +19,10 @@ namespace cudualmc
     {
       return x * other.x + y * other.y + z * other.z;
     }
+    inline __device__ __host__ T norm() const
+    {
+      return sqrt(x * x + y * y + z * z);
+    }
 
     inline __device__ __host__ Vertex<T> operator-(Vertex<T> const &other) const
     {
