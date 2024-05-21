@@ -43,7 +43,7 @@ verts, faces = diffdmc(sdf, deform, return_quads=False, device=device, normalize
 ```
 
 Input
-* `sdf`: queries SDF values on the grid vertices (see the `test.py` for how to create the grid). The gradient will be back-propagated to the source that generates the SDF values. (**[N, N, N, 3]**)
+* `sdf`: queries SDF values on the grid vertices (see the `test/example.py` for how to create the grid). The gradient will be back-propagated to the source that generates the SDF values. (**[N, N, N, 3]**)
 * `deform (optional)`: (learnable) deformation values on the grid vertices, the range must be [-0.5, 0.5], default=None.  (**[N, N, N, 3]**)
 * `device`: cuda device, default='cuda:0'.
 * `normalize`: whether to normalize the output vertices, default=True. If set to **True**, the vertices are normalized to [0, 1]. When **False**, the vertices remain unnormalized as [0, dim-1], 
