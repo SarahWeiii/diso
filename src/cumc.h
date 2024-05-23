@@ -132,10 +132,10 @@ namespace cumc
     __host__ void ensure_vert_storage_size(size_t vert_count);
 
     __host__ void forward(Scalar const *d_data, Vertex<Scalar> const *d_deform, IndexType dimX, IndexType dimY, IndexType dimZ,
-                          Scalar iso);
+                          Scalar iso, int device);
     __host__ void backward(Scalar const *d_data, Vertex<Scalar> const *d_deform, IndexType dimX, IndexType dimY,
                            IndexType dimZ, Scalar iso, Scalar *adj_d_data, Vertex<Scalar> *adj_d_deform,
-                           Vertex<Scalar> const *adj_verts);
+                           Vertex<Scalar> const *adj_verts, int device);
   };
 
 } // namespace cumc

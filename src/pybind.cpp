@@ -73,7 +73,7 @@ namespace cumc
       IndexType dimY = grid.size(1);
       IndexType dimZ = grid.size(2);
 
-      mc.forward(grid.data_ptr<Scalar>(), reinterpret_cast<Vertex<Scalar> *>(deform.data_ptr<Scalar>()), dimX, dimY, dimZ, iso);
+      mc.forward(grid.data_ptr<Scalar>(), reinterpret_cast<Vertex<Scalar> *>(deform.data_ptr<Scalar>()), dimX, dimY, dimZ, iso, grid.device().index());
 
       auto verts =
           torch::from_blob(
@@ -120,7 +120,7 @@ namespace cumc
       IndexType dimY = grid.size(1);
       IndexType dimZ = grid.size(2);
 
-      mc.forward(grid.data_ptr<Scalar>(), NULL, dimX, dimY, dimZ, iso);
+      mc.forward(grid.data_ptr<Scalar>(), NULL, dimX, dimY, dimZ, iso, grid.device().index());
 
       auto verts =
           torch::from_blob(
@@ -166,7 +166,7 @@ namespace cumc
       mc.backward(
           grid.data_ptr<Scalar>(), reinterpret_cast<Vertex<Scalar> *>(deform.data_ptr<Scalar>()), dimX, dimY, dimZ, iso,
           adj_grid.data_ptr<Scalar>(), reinterpret_cast<Vertex<Scalar> *>(adj_deform.data_ptr<Scalar>()),
-          reinterpret_cast<Vertex<Scalar> *>(adj_verts.data_ptr<Scalar>()));
+          reinterpret_cast<Vertex<Scalar> *>(adj_verts.data_ptr<Scalar>()), grid.device().index());
     }
 
     void backward(torch::Tensor grid, Scalar iso, torch::Tensor adj_verts,
@@ -196,7 +196,8 @@ namespace cumc
       mc.backward(
           grid.data_ptr<Scalar>(), NULL, dimX, dimY, dimZ, iso,
           adj_grid.data_ptr<Scalar>(), NULL,
-          reinterpret_cast<Vertex<Scalar> *>(adj_verts.data_ptr<Scalar>()));
+          reinterpret_cast<Vertex<Scalar> *>(adj_verts.data_ptr<Scalar>()),
+          grid.device().index());
     }
   };
 
@@ -265,7 +266,7 @@ namespace cudualmc
       IndexType dimY = grid.size(1);
       IndexType dimZ = grid.size(2);
 
-      dmc.forward(grid.data_ptr<Scalar>(), reinterpret_cast<Vertex<Scalar> *>(deform.data_ptr<Scalar>()), dimX, dimY, dimZ, iso);
+      dmc.forward(grid.data_ptr<Scalar>(), reinterpret_cast<Vertex<Scalar> *>(deform.data_ptr<Scalar>()), dimX, dimY, dimZ, iso, grid.device().index());
 
       auto verts =
           torch::from_blob(
@@ -312,7 +313,7 @@ namespace cudualmc
       IndexType dimY = grid.size(1);
       IndexType dimZ = grid.size(2);
 
-      dmc.forward(grid.data_ptr<Scalar>(), NULL, dimX, dimY, dimZ, iso);
+      dmc.forward(grid.data_ptr<Scalar>(), NULL, dimX, dimY, dimZ, iso, grid.device().index());
 
       auto verts =
           torch::from_blob(
@@ -358,7 +359,7 @@ namespace cudualmc
       dmc.backward(
           grid.data_ptr<Scalar>(), reinterpret_cast<Vertex<Scalar> *>(deform.data_ptr<Scalar>()), dimX, dimY, dimZ, iso,
           adj_grid.data_ptr<Scalar>(), reinterpret_cast<Vertex<Scalar> *>(adj_deform.data_ptr<Scalar>()),
-          reinterpret_cast<Vertex<Scalar> *>(adj_verts.data_ptr<Scalar>()));
+          reinterpret_cast<Vertex<Scalar> *>(adj_verts.data_ptr<Scalar>()), grid.device().index());
     }
 
     void backward(torch::Tensor grid, Scalar iso, torch::Tensor adj_verts,
@@ -388,7 +389,8 @@ namespace cudualmc
       dmc.backward(
           grid.data_ptr<Scalar>(), NULL, dimX, dimY, dimZ, iso,
           adj_grid.data_ptr<Scalar>(), NULL,
-          reinterpret_cast<Vertex<Scalar> *>(adj_verts.data_ptr<Scalar>()));
+          reinterpret_cast<Vertex<Scalar> *>(adj_verts.data_ptr<Scalar>()),
+          grid.device().index());
     }
   };
 
