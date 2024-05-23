@@ -23,23 +23,24 @@ class DiffMC(nn.Module):
                     verts, tris = mc.forward(grid, isovalue)
                 else:
                     verts, tris = mc.forward(grid, deform, isovalue)
-                ctx.grid = grid
-                ctx.deform = deform
                 ctx.isovalue = isovalue
+                ctx.save_for_backward(grid, deform)
                 return verts, tris
 
             @staticmethod
             def backward(ctx, adj_verts, adj_faces):
-                adj_grid = torch.zeros_like(ctx.grid)
-                if ctx.deform is None:
+                grid, deform = ctx.saved_tensors
+                DMCFunction.forward(ctx, grid, deform, ctx.isovalue)
+                adj_grid = torch.zeros_like(grid)
+                if deform is None:
                     mc.backward(
-                        ctx.grid, ctx.isovalue, adj_verts, adj_grid
+                        grid, ctx.isovalue, adj_verts, adj_grid
                     )
                     return adj_grid, None, None, None, None
                 else:
-                    adj_deform = torch.zeros_like(ctx.deform)
+                    adj_deform = torch.zeros_like(deform)
                     mc.backward(
-                        ctx.grid, ctx.deform, ctx.isovalue, adj_verts, adj_grid, adj_deform
+                        grid, deform, ctx.isovalue, adj_verts, adj_grid, adj_deform
                     )
                     return adj_grid, adj_deform, None, None, None
 
@@ -78,23 +79,24 @@ class DiffDMC(nn.Module):
                     verts, quads = dmc.forward(grid, isovalue)
                 else:
                     verts, quads = dmc.forward(grid, deform, isovalue)
-                ctx.grid = grid
-                ctx.deform = deform
                 ctx.isovalue = isovalue
+                ctx.save_for_backward(grid, deform)
                 return verts, quads
 
             @staticmethod
             def backward(ctx, adj_verts, adj_faces):
-                adj_grid = torch.zeros_like(ctx.grid)
-                if ctx.deform is None:
+                grid, deform = ctx.saved_tensors
+                DDMCFunction.forward(ctx, grid, deform, ctx.isovalue)
+                adj_grid = torch.zeros_like(grid)
+                if deform is None:
                     dmc.backward(
-                        ctx.grid, ctx.isovalue, adj_verts, adj_grid
+                        grid, ctx.isovalue, adj_verts, adj_grid
                     )
                     return adj_grid, None, None, None, None
                 else:
-                    adj_deform = torch.zeros_like(ctx.deform)
+                    adj_deform = torch.zeros_like(deform)
                     dmc.backward(
-                        ctx.grid, ctx.deform, ctx.isovalue, adj_verts, adj_grid, adj_deform
+                        grid, deform, ctx.isovalue, adj_verts, adj_grid, adj_deform
                     )
                     return adj_grid, adj_deform, None, None, None
 

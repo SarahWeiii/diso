@@ -66,27 +66,56 @@ deform = torch.nn.Parameter(
 )
 
 # DiffMC with random grid deformation
+## Test forward
 verts, faces = diffmc(sdf, 0.5 * torch.tanh(deform), device=device)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffmc_sphere_w_deform.obj")
+## Test backward
+L = torch.norm(verts)
+L.backward()
+grad_grid = sdf.grad
+grad_deform = deform.grad
+print("============ DiffMC w/ grid deformation ============")
+print("grad_grid:", grad_grid.shape, grad_grid.min(), grad_grid.max())
+print("grad_deform:", grad_deform.shape, grad_deform.min(), grad_deform.max())
 
 # DiffMC without grid deformation
 verts, faces = diffmc(sdf, None, device=device)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffmc_sphere_wo_deform.obj")
+## Test backward
+L = torch.norm(verts)
+L.backward()
+grad_grid = sdf.grad
+print("============ DiffMC w/o grid deformation ============")
+print("grad_grid:", grad_grid.shape, grad_grid.min(), grad_grid.max())
 
 # DiffDMC with random grid deformation
 verts, faces = diffdmc(sdf, 0.5 * torch.tanh(deform), device=device)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffdmc_sphere_w_deform.obj")
+## Test backward
+L = torch.norm(verts)
+L.backward()
+grad_grid = sdf.grad
+grad_deform = deform.grad
+print("============ DiffDMC w/ grid deformation ============")
+print("grad_grid:", grad_grid.shape, grad_grid.min(), grad_grid.max())
+print("grad_deform:", grad_deform.shape, grad_deform.min(), grad_deform.max())
 
 # DiffDMC without grid deformation
 verts, faces = diffdmc(sdf, None, device=device)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffdmc_sphere_wo_deform.obj")
+## Test backward
+L = torch.norm(verts)
+L.backward()
+grad_grid = sdf.grad
+print("============ DiffDMC w/o grid deformation ============")
+print("grad_grid:", grad_grid.shape, grad_grid.min(), grad_grid.max())
 
-print("examples saved to out/")
+print("forward results saved to out/")
