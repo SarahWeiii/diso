@@ -7,14 +7,13 @@ from . import _C
 
 
 class DiffMC(nn.Module):
-    def __init__(self, dtype=torch.float32, device="cuda:0"):
+    def __init__(self, dtype=torch.float32):
         super().__init__()
         self.dtype = dtype
         if dtype == torch.float32:
             mc = _C.CUMCFloat()
         elif dtype == torch.float64:
             mc = _C.CUMCDouble()
-        torch.cuda.set_device(device)
 
         class DMCFunction(Function):
             @staticmethod
@@ -23,30 +22,30 @@ class DiffMC(nn.Module):
                     verts, tris = mc.forward(grid, isovalue)
                 else:
                     verts, tris = mc.forward(grid, deform, isovalue)
-                ctx.grid = grid
-                ctx.deform = deform
                 ctx.isovalue = isovalue
+                ctx.save_for_backward(grid, deform)
                 return verts, tris
 
             @staticmethod
             def backward(ctx, adj_verts, adj_faces):
-                adj_grid = torch.zeros_like(ctx.grid)
-                if ctx.deform is None:
+                grid, deform = ctx.saved_tensors
+                DMCFunction.forward(ctx, grid, deform, ctx.isovalue)
+                adj_grid = torch.zeros_like(grid)
+                if deform is None:
                     mc.backward(
-                        ctx.grid, ctx.isovalue, adj_verts, adj_grid
+                        grid, ctx.isovalue, adj_verts, adj_grid
                     )
                     return adj_grid, None, None, None, None
                 else:
-                    adj_deform = torch.zeros_like(ctx.deform)
+                    adj_deform = torch.zeros_like(deform)
                     mc.backward(
-                        ctx.grid, ctx.deform, ctx.isovalue, adj_verts, adj_grid, adj_deform
+                        grid, deform, ctx.isovalue, adj_verts, adj_grid, adj_deform
                     )
                     return adj_grid, adj_deform, None, None, None
 
         self.func = DMCFunction
 
-    def forward(self, grid, deform=None, isovalue=0.0, device="cuda:0", normalize=True):
-        torch.cuda.set_device(device)
+    def forward(self, grid, deform=None, isovalue=0.0, normalize=True):
         if grid.min() >= 0 or grid.max() <= 0:
             return torch.zeros((0, 3), dtype=self.dtype, device=grid.device), torch.zeros((0, 3), dtype=torch.int32, device=grid.device)
         dimX, dimY, dimZ = grid.shape
@@ -62,14 +61,13 @@ class DiffMC(nn.Module):
         return verts, tris.long()
 
 class DiffDMC(nn.Module):
-    def __init__(self, dtype=torch.float32, device="cuda:0"):
+    def __init__(self, dtype=torch.float32):
         super().__init__()
         self.dtype = dtype
         if dtype == torch.float32:
             dmc = _C.CUDMCFloat()
         elif dtype == torch.float64:
             dmc = _C.CUDMCDouble()
-        torch.cuda.set_device(device)
 
         class DDMCFunction(Function):
             @staticmethod
@@ -78,30 +76,30 @@ class DiffDMC(nn.Module):
                     verts, quads = dmc.forward(grid, isovalue)
                 else:
                     verts, quads = dmc.forward(grid, deform, isovalue)
-                ctx.grid = grid
-                ctx.deform = deform
                 ctx.isovalue = isovalue
+                ctx.save_for_backward(grid, deform)
                 return verts, quads
 
             @staticmethod
             def backward(ctx, adj_verts, adj_faces):
-                adj_grid = torch.zeros_like(ctx.grid)
-                if ctx.deform is None:
+                grid, deform = ctx.saved_tensors
+                DDMCFunction.forward(ctx, grid, deform, ctx.isovalue)
+                adj_grid = torch.zeros_like(grid)
+                if deform is None:
                     dmc.backward(
-                        ctx.grid, ctx.isovalue, adj_verts, adj_grid
+                        grid, ctx.isovalue, adj_verts, adj_grid
                     )
                     return adj_grid, None, None, None, None
                 else:
-                    adj_deform = torch.zeros_like(ctx.deform)
+                    adj_deform = torch.zeros_like(deform)
                     dmc.backward(
-                        ctx.grid, ctx.deform, ctx.isovalue, adj_verts, adj_grid, adj_deform
+                        grid, deform, ctx.isovalue, adj_verts, adj_grid, adj_deform
                     )
                     return adj_grid, adj_deform, None, None, None
 
         self.func = DDMCFunction
 
-    def forward(self, grid, deform=None, isovalue=0.0, return_quads=False, device="cuda:0", normalize=True):
-        torch.cuda.set_device(device)
+    def forward(self, grid, deform=None, isovalue=0.0, return_quads=False, normalize=True):
         if grid.min() >= 0 or grid.max() <= 0:
             return torch.zeros((0, 3), dtype=self.dtype, device=grid.device), torch.zeros((0, 4), dtype=torch.int32, device=grid.device)
         dimX, dimY, dimZ = grid.shape

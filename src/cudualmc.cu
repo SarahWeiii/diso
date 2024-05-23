@@ -1057,9 +1057,10 @@ namespace cudualmc
 
   template <typename Scalar, typename IndexType>
   void CUDualMC<Scalar, IndexType>::forward(Scalar const *d_data, Vertex<Scalar> const *d_deform, IndexType dimX, IndexType dimY,
-                                            IndexType dimZ, Scalar iso)
+                                            IndexType dimZ, Scalar iso, int device)
   {
-
+    cudaSetDevice(device);
+    
     resize(dimX, dimY, dimZ);
 
     size_t temp_storage_bytes = 0;
@@ -1129,8 +1130,9 @@ namespace cudualmc
   template <typename Scalar, typename IndexType>
   void CUDualMC<Scalar, IndexType>::backward(Scalar const *d_data, Vertex<Scalar> const *d_deform, IndexType dimX, IndexType dimY,
                                              IndexType dimZ, Scalar iso, Scalar *adj_d_data, Vertex<Scalar> *adj_d_deform,
-                                             Vertex<Scalar> const *adj_verts)
+                                             Vertex<Scalar> const *adj_verts, int device)
   {
+    cudaSetDevice(device);
     adj_create_dmc_verts_kernel<<<(n_used_cells + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(
         *this, d_data, d_deform, iso, adj_d_data, adj_d_deform, adj_verts);      
   }
