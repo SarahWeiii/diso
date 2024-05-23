@@ -1,4 +1,6 @@
 # Differentiable Iso-Surface Extraction Package (DISO)
+[***News***] DISO now supports batch training and checkpointing! It is no longer necessary to allocate multiple iso-surface extractors.
+
 This repository consists of a variety of differentiable iso-surface extraction algorithms implemented in `cuda`.
 
 Currently, two algorithms are incorporated:
@@ -38,14 +40,13 @@ diffdmc = DiffDMC(dtype=torch.float32).cuda() # or dtype=torch.float64
 ```
 Then use its `forward` function to generate a single mesh:
 ```
-verts, faces = diffmc(sdf, deform, device=device, normalize=True)  # or deform=None
-verts, faces = diffdmc(sdf, deform, return_quads=False, device=device, normalize=True)  # or deform=None
+verts, faces = diffmc(sdf, deform, normalize=True)  # or deform=None
+verts, faces = diffdmc(sdf, deform, return_quads=False, normalize=True)  # or deform=None
 ```
 
 Input
 * `sdf`: queries SDF values on the grid vertices (see the `test/example.py` for how to create the grid). The gradient will be back-propagated to the source that generates the SDF values. (**[N, N, N, 3]**)
 * `deform (optional)`: (learnable) deformation values on the grid vertices, the range must be [-0.5, 0.5], default=None.  (**[N, N, N, 3]**)
-* `device`: cuda device, default='cuda:0'.
 * `normalize`: whether to normalize the output vertices, default=True. If set to **True**, the vertices are normalized to [0, 1]. When **False**, the vertices remain unnormalized as [0, dim-1], 
 * `return_quads`: whether return quad meshes; only applicable for DiffDMC, default=False. If set to **True**, the function returns quad meshes (**[F, 4]**).
 
@@ -56,11 +57,11 @@ Output
 The gradient will be automatically computed when `backward` function is called.
 
 # Batch Training
-Each instance of `diffmc` or `diffdmc` can handle only a single shape because it saves intermediate results for the backward pass. If you wish to implement batch training, you can construct `batchsize` extractors as follows:
+You can loop over the batch size to conduct an iso-surface extraction on each object, then compute the loss for the backward pass.
 ```
-extractors = [DiffMC(dtype=torch.float32).cuda() for i in batchsize]
+extractor = DiffMC(dtype=torch.float32).cuda()  # or DiffDMC
 for bs in range(batchsize):
-    verts, faces = extractors[bs](sdf, deform)
+    verts, faces = extractor(sdf, deform)
     # compute and accumulate losses
 loss.backward()
 ```
