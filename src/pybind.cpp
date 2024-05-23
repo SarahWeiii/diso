@@ -78,12 +78,12 @@ namespace cumc
       auto verts =
           torch::from_blob(
               mc.verts, torch::IntArrayRef{mc.n_verts, 3},
-              torch::TensorOptions().device(torch::kCUDA).dtype(scalarType))
+              grid.options().dtype(scalarType))
               .clone();
       auto tris =
           torch::from_blob(
               mc.tris, torch::IntArrayRef{mc.n_tris, 3},
-              torch::TensorOptions().device(torch::kCUDA).dtype(indexType))
+              grid.options().dtype(indexType))
               .clone();
 
       return {verts, tris};
@@ -125,12 +125,12 @@ namespace cumc
       auto verts =
           torch::from_blob(
               mc.verts, torch::IntArrayRef{mc.n_verts, 3},
-              torch::TensorOptions().device(torch::kCUDA).dtype(scalarType))
+              grid.options().dtype(scalarType))
               .clone();
       auto tris =
           torch::from_blob(
               mc.tris, torch::IntArrayRef{mc.n_tris, 3},
-              torch::TensorOptions().device(torch::kCUDA).dtype(indexType))
+              grid.options().dtype(indexType))
               .clone();
 
       return {verts, tris};
@@ -270,12 +270,12 @@ namespace cudualmc
       auto verts =
           torch::from_blob(
               dmc.verts, torch::IntArrayRef{dmc.n_verts, 3},
-              torch::TensorOptions().device(torch::kCUDA).dtype(scalarType))
+              grid.options().dtype(scalarType))
               .clone();
       auto quads =
           torch::from_blob(
               dmc.quads, torch::IntArrayRef{dmc.n_quads, 4},
-              torch::TensorOptions().device(torch::kCUDA).dtype(indexType))
+              grid.options().dtype(indexType))
               .clone();
 
       return {verts, quads};
@@ -317,12 +317,12 @@ namespace cudualmc
       auto verts =
           torch::from_blob(
               dmc.verts, torch::IntArrayRef{dmc.n_verts, 3},
-              torch::TensorOptions().device(torch::kCUDA).dtype(scalarType))
+              grid.options().dtype(scalarType))
               .clone();
       auto quads =
           torch::from_blob(
               dmc.quads, torch::IntArrayRef{dmc.n_quads, 4},
-              torch::TensorOptions().device(torch::kCUDA).dtype(indexType))
+              grid.options().dtype(indexType))
               .clone();
 
       return {verts, quads};

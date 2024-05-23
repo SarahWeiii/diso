@@ -14,7 +14,7 @@ class DiffMC(nn.Module):
             mc = _C.CUMCFloat()
         elif dtype == torch.float64:
             mc = _C.CUMCDouble()
-        torch.cuda.set_device(device)
+        # torch.cuda.set_device(device)
 
         class DMCFunction(Function):
             @staticmethod
@@ -47,7 +47,8 @@ class DiffMC(nn.Module):
         self.func = DMCFunction
 
     def forward(self, grid, deform=None, isovalue=0.0, device="cuda:0", normalize=True):
-        torch.cuda.set_device(device)
+        # assert str(grid.device) == device, f"{grid.device} != {device}"
+        # torch.cuda.set_device(device)
         if grid.min() >= 0 or grid.max() <= 0:
             return torch.zeros((0, 3), dtype=self.dtype, device=grid.device), torch.zeros((0, 3), dtype=torch.int32, device=grid.device)
         dimX, dimY, dimZ = grid.shape
@@ -70,7 +71,7 @@ class DiffDMC(nn.Module):
             dmc = _C.CUDMCFloat()
         elif dtype == torch.float64:
             dmc = _C.CUDMCDouble()
-        torch.cuda.set_device(device)
+        # torch.cuda.set_device(device)
 
         class DDMCFunction(Function):
             @staticmethod
@@ -103,7 +104,7 @@ class DiffDMC(nn.Module):
         self.func = DDMCFunction
 
     def forward(self, grid, deform=None, isovalue=0.0, return_quads=False, device="cuda:0", normalize=True):
-        torch.cuda.set_device(device)
+        # torch.cuda.set_device(device)
         if grid.min() >= 0 or grid.max() <= 0:
             return torch.zeros((0, 3), dtype=self.dtype, device=grid.device), torch.zeros((0, 4), dtype=torch.int32, device=grid.device)
         dimX, dimY, dimZ = grid.shape
