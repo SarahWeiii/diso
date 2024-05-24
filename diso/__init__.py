@@ -46,10 +46,10 @@ class DiffMC(nn.Module):
         self.func = DMCFunction
 
     def forward(self, grid, deform=None, isovalue=0.0, normalize=True):
-        if grid.min() >= 0 or grid.max() <= 0:
+        if grid.min() >= isovalue or grid.max() <= isovalue:
             return torch.zeros((0, 3), dtype=self.dtype, device=grid.device), torch.zeros((0, 3), dtype=torch.int32, device=grid.device)
         dimX, dimY, dimZ = grid.shape
-        grid = F.pad(grid, (1, 1, 1, 1, 1, 1), "constant", 1)
+        grid = F.pad(grid, (1, 1, 1, 1, 1, 1), "constant", isovalue+1)
         if deform is not None:
             deform = F.pad(deform, (0, 0, 1, 1, 1, 1, 1, 1), "constant", 0)
         verts, tris = self.func.apply(grid, deform, isovalue)
@@ -100,10 +100,10 @@ class DiffDMC(nn.Module):
         self.func = DDMCFunction
 
     def forward(self, grid, deform=None, isovalue=0.0, return_quads=False, normalize=True):
-        if grid.min() >= 0 or grid.max() <= 0:
+        if grid.min() >= isovalue or grid.max() <= isovalue:
             return torch.zeros((0, 3), dtype=self.dtype, device=grid.device), torch.zeros((0, 4), dtype=torch.int32, device=grid.device)
         dimX, dimY, dimZ = grid.shape
-        grid = F.pad(grid, (1, 1, 1, 1, 1, 1), "constant", 1)
+        grid = F.pad(grid, (1, 1, 1, 1, 1, 1), "constant", isovalue+1)
         if deform is not None:
             deform = F.pad(deform, (0, 0, 1, 1, 1, 1, 1, 1), "constant", 0)
         verts, quads = self.func.apply(grid, deform, isovalue)

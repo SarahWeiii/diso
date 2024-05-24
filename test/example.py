@@ -67,7 +67,7 @@ deform = torch.nn.Parameter(
 
 # DiffMC with random grid deformation
 ## Test forward
-verts, faces = diffmc(sdf, 0.5 * torch.tanh(deform))
+verts, faces = diffmc(sdf, 0.5 * torch.tanh(deform), isovalue=0)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffmc_sphere_w_deform.obj")
@@ -81,7 +81,7 @@ print("grad_grid:", grad_grid.shape, grad_grid.min(), grad_grid.max())
 print("grad_deform:", grad_deform.shape, grad_deform.min(), grad_deform.max())
 
 # DiffMC without grid deformation
-verts, faces = diffmc(sdf, None)
+verts, faces = diffmc(sdf, None, isovalue=0)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffmc_sphere_wo_deform.obj")
@@ -93,7 +93,7 @@ print("============ DiffMC w/o grid deformation ============")
 print("grad_grid:", grad_grid.shape, grad_grid.min(), grad_grid.max())
 
 # DiffDMC with random grid deformation
-verts, faces = diffdmc(sdf, 0.5 * torch.tanh(deform))
+verts, faces = diffdmc(sdf, 0.5 * torch.tanh(deform), isovalue=0)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffdmc_sphere_w_deform.obj")
@@ -107,7 +107,7 @@ print("grad_grid:", grad_grid.shape, grad_grid.min(), grad_grid.max())
 print("grad_deform:", grad_deform.shape, grad_deform.min(), grad_deform.max())
 
 # DiffDMC without grid deformation
-verts, faces = diffdmc(sdf, None)
+verts, faces = diffdmc(sdf, None, isovalue=0)
 verts = verts.cpu() * (sphere.aabb[:, 1] - sphere.aabb[:, 0]) + sphere.aabb[:, 0]
 mesh = trimesh.Trimesh(vertices=verts.detach().cpu().numpy(), faces=faces.cpu().numpy(), process=False)
 mesh.export("out/diffdmc_sphere_wo_deform.obj")
