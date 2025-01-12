@@ -1,4 +1,6 @@
 # Differentiable Iso-Surface Extraction Package (DISO)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/diso)
+
 [***News***] DISO now supports batch training and checkpointing! It is no longer necessary to allocate multiple iso-surface extractors.
 
 This repository consists of a variety of differentiable iso-surface extraction algorithms implemented in `cuda`.
