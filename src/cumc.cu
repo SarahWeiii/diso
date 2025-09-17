@@ -353,7 +353,9 @@ namespace cumc
     Scalar d0 = data[v0];
     Scalar d1 = data[v1];
 
-    Scalar t = (d1 != d0) ? clamp((iso - d0) / (d1 - d0), Scalar(0.0), Scalar(1.0)) : Scalar(0.5);
+    const Scalar t = (d1 != d0)
+      ? clamp((iso - d0) / (d1 - d0), Scalar(0.0), Scalar(1.0)) \
+      : Scalar(0.5);
 
     Vertex<Scalar> p0 = {Scalar(x), Scalar(y), Scalar(z)};
     Vertex<Scalar> p1 = {Scalar(x + offset[0]), Scalar(y + offset[1]), Scalar(z + offset[2])};
@@ -364,8 +366,30 @@ namespace cumc
       p1 += deform[v1];
     }
 
-    return p0 + (p1 - p0) * t;
+    return fma_vertex(t, p1, fma_vertex(-t, p0, p0));
   }
+
+  __device__ Vertex<double> fma_vertex(
+    const double t, const Vertex<double> & a, const Vertex<double> & b
+  ) {
+    Vertex<double> out;
+    out.x = fma(t, a.x, b.x);
+    out.y = fma(t, a.y, b.y);
+    out.z = fma(t, a.z, b.z);
+    return out;
+  }
+
+  __device__ Vertex<float> fma_vertex(
+    const float t, const Vertex<float> & a, const Vertex<float> & b
+  ) {
+    Vertex<float> out;
+    out.x = fmaf(t, a.x, b.x);
+    out.y = fmaf(t, a.y, b.y);
+    out.z = fmaf(t, a.z, b.z);
+    return out;
+  }
+
+
 
   template <typename Scalar, typename IndexType>
   __global__ void create_cell_mc_verts_kernel(CuMC<Scalar, IndexType> mc,
@@ -421,7 +445,8 @@ namespace cumc
     IndexType v1 = mc.gA(x + offset[0], y + offset[1], z + offset[2]);
     Scalar d0 = data[v0];
     Scalar d1 = data[v1];
-    Scalar t = (d1 != d0) ? clamp((iso - d0) / (d1 - d0), Scalar(0.0), Scalar(1.0)) : Scalar(0.5);
+    const Scalar delta = d1 - d0;
+    const Scalar t = (d1 != d0) ? clamp((iso - d0) / delta, Scalar(0.0), Scalar(1.0)) : Scalar(0.5);
 
     Vertex<Scalar> p0 = {Scalar(x), Scalar(y), Scalar(z)};
     Vertex<Scalar> p1 = {Scalar(x + offset[0]), Scalar(y + offset[1]), Scalar(z + offset[2])};
@@ -445,8 +470,9 @@ namespace cumc
       atomicAdd(&adj_deform[v1].z, adj_p1.z);
     }
 
-    Scalar adj_d0 = (iso - d1) / ((d1 - d0) * (d1 - d0)) * adj_t;
-    Scalar adj_d1 = (d0 - iso) / ((d1 - d0) * (d1 - d0)) * adj_t;
+    const auto delta_sqr = delta * delta;
+    Scalar adj_d0 = (iso - d1) / delta_sqr * adj_t;
+    Scalar adj_d1 = (d0 - iso) / delta_sqr * adj_t;
 
     atomicAdd(&adj_data[v0], adj_d0);
     atomicAdd(&adj_data[v1], adj_d1);
