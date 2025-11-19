@@ -93,6 +93,29 @@ The algorithms have been rigorously tested on an NVIDIA RTX 4090 GPU. Each algor
 | VRAM / G | 3.07 | 4.07 | 0.59 | 0.45 |
 | Time / ms | 49.10 | 65.35 | 2.55 | 2.78 |
 
+# ROCm Support (using AMD Docker ROCm build environment)
+
+- install docker
+- `git clone` this repository
+- Build from source with ROCM=1 flag as follows;
+
+```
+docker run -it \
+    --cap-add=SYS_PTRACE \
+    --device=/dev/kfd \
+    --device=/dev/dri \
+    --group-add video \
+    --shm-size 8G \
+    --volume $PWD:/ \
+    --network host \
+    rocm/pytorch:rocm7.1_ubuntu24.04_py3.12_pytorch_release_2.7.1
+
+for file in src/*; do echo "$file"; [ -f "$file" ] && hipify-perl "$file" --inplace; done
+
+export FORCE_CUDA=1; export ROCM=1; python setup.py sdist bdist_wheel
+# output is in /dist
+# pip install dist/<filename>
+```
 
 # Citation
 If you find this repository useful, please cite the following paper:
