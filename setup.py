@@ -10,7 +10,6 @@ from torch.utils.cpp_extension import (
     CUDAExtension,
 )
 
-
 def get_extensions():
     """Refer to torchvision."""
 
@@ -39,6 +38,20 @@ def get_extensions():
 
     sources = [s for s in sources]
     include_dirs = ["src"]
+
+    if os.getenv(
+        "ROCM", "0"
+    ) == "1":
+        # Optional: Define ROCM_PATH if it's not set in your environment
+        ROCM_PATH = os.environ.get('ROCM_PATH', '/opt/rocm')
+
+        # Define paths for HIP include and library directories
+        hip_include_dir = os.path.join(ROCM_PATH, 'include')
+        hip_library_dir = os.path.join(ROCM_PATH, 'lib')
+
+        include_dirs = [hip_include_dir, "src"]
+
+
     print("sources:", sources)
 
     ext_modules = [
@@ -50,6 +63,23 @@ def get_extensions():
             extra_compile_args=extra_compile_args,
         )
     ]
+
+    if os.getenv(
+        "ROCM", "0"
+    ) == "1":
+        ext_modules = [
+            extension(
+                "diso._C",
+                sources,
+                include_dirs=include_dirs,
+                define_macros=define_macros,
+                library_dirs=[hip_library_dir],
+                libraries=['amdhip64'],
+                runtime_library_dirs=[hip_library_dir],
+                extra_compile_args=extra_compile_args,
+            )
+        ]
+
     return ext_modules
 
 setup(
